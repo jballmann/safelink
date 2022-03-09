@@ -1,10 +1,3 @@
-{
-  "postbank": {
-    "sector": "fin",
-    "country": "DE"
-  },
-  "rwthac": {
-    "sector": "edu",
-    "country": "DE"
-  }
-}
+!id;name;sector;country
+postbank;Postbank;fin;DE
+rwthac;RWTH Aachen University;edu;DE
