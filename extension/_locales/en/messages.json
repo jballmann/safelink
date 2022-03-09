@@ -1,0 +1,26 @@
+{
+  "type_redirect": {
+    "message": "Redirect - It is not obvious to which URL one is redirected."
+  },
+  "type_trusted": {
+    "message": "Trustworthy"
+  },
+  "type_untrusted": {
+    "message": "Not trustworthy"
+  },
+  "type_unknown": {
+    "message": "Unknown"
+  },
+  "sector_edu": {
+    "message": "Education institute"
+  },
+  "sector_fin": {
+    "message": "Bank / Financial institution"
+  },
+  "openURL": {
+    "message": "Open URL"
+  },
+  "checkDomain": {
+    "message": "Check domain"
+  }
+}

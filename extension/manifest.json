@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "SafeLink Extension",
+  "description": "Investigate your emails for suspicious links",
+  "version": "2.0",
+  "author": "jballmann",
+  "default_locale": "en",
+  "applications": {
+    "gecko": {
+      "id": "safelink@jballmann",
+      "strict_min_version": "78.0"
+    }
+  },
+  "background": {
+    "scripts": [
+      "background.js",
+      "js/publicsuffixlist.js",
+      "js/punycode.min.js"
+    ]
+  },
+  "permissions": [
+    "<all_urls>",
+    "messagesRead",
+    "messagesModify",
+    "storage"
+  ],
+  "icons": {
+    "64": "images/logo/64x64.png",
+    "32": "images/logo/32x32.png",
+    "16": "images/logo/16x16.png"
+  }
+}

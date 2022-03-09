@@ -1,0 +1,10 @@
+{
+  "postbank": {
+    "sector": "fin",
+    "country": "DE"
+  },
+  "rwthac": {
+    "sector": "edu",
+    "country": "DE"
+  }
+}

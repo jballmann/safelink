@@ -1,0 +1,26 @@
+{
+  "type_redirect": {
+    "message": "Weiterleitung - Es ist nicht ersichtlich zu welcher URL man weitergeleitet wird."
+  },
+  "type_trusted": {
+    "message": "Vertrauenswürdig"
+  },
+  "type_untrusted": {
+    "message": "Nicht vertrauenswürdig"
+  },
+  "type_unknown": {
+    "message": "Unbekannt"
+  },
+  "sector_edu": {
+    "message": "Bildungseinrichtung"
+  },
+  "sector_fin": {
+    "message": "Bank / Kreditinstitut"
+  },
+  "openURL": {
+    "message": "URL öffnen"
+  },
+  "checkDomain": {
+    "message": "Domain prüfen"
+  }
+}
