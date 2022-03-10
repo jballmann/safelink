@@ -1,35 +1,147 @@
-async function updateKnowledge() {
-  const knowledge = messenger.storage.local;
-  
-  await knowledge.set({'i am never empty': true });
-  await knowledge.clear();
-  
-  await knowledge.set({
-    'updatedAt': new Date(),
-    't1p.de': { type: 'redirect' },
-    'postbank.de': { type: 'trusted', org: 'Postbank' },
-    'malcode.net': { type: 'untrusted' },
-    'rwth-aachen.de': { type: 'trusted', org: 'RWTH Aachen University' },
-    'orgs': {
-      'Postbank': {
-        sector: 'fin',
-        country: 'DE'
-      },
-      'RWTH Aachen University': {
-        sector: 'edu',
-        country: 'DE'
-      }
+const SOURCE = {
+  publicSuffixList: 'https://publicsuffix.org/list/public_suffix_list.dat',
+  trusted: 'https://raw.githubusercontent.com/jballmann/safelink/master/lists/hosts_trusted.txt',
+  redirect: 'https://raw.githubusercontent.com/jballmann/safelink/master/lists/hosts_redirect.txt',
+  orgs: 'https://raw.githubusercontent.com/jballmann/safelink/master/lists/orgs.txt',
+  suspicious: [
+    {
+      url: 'https://curben.gitlab.io/malware-filter/phishing-filter-hosts.txt',
+      get: (line) => line.split(' ')[1]
     }
-  });
-  console.log('knowledge updated');
+  ]
 }
 
-async function updatePublicSuffixList() {
-  const response = await window.fetch('https://publicsuffix.org/list/public_suffix_list.dat');
-  messenger.storage.local.set({
-    'publicSuffixList': await response.text()
-  })
-  console.log('public suffixes updated')
+function filterComments(array) {
+  return array.filter(function (line){
+    return line !== "" &&
+    !line.startsWith('!') &&
+    !line.startsWith('#')
+  });
+}
+
+/**
+  * Fetches the Public Suffix List and persists them
+  */
+async function updatePSL() {    
+  try {
+    const response = await window.fetch(SOURCE.publicSuffixList);
+    await messenger.storage.local.set({
+      'psl': await response.text(),
+      'pslVersion': Date.now()
+    });
+  }
+  catch (error) { console.log(error); }
+}
+
+async function fetchAndParse(listName, processFunction) {
+  let lines;
+  try {
+    const response = await window.fetch(SOURCE[listName]);
+    lines = (await response.text()).split('\n');
+    
+    const lastUpdateAt = lines.shift().replace(/^[|]$/g, '');
+    
+    const version = (await messenger.storage.local.get(listName + 'Version'))[listName + 'Version'];
+    if(version && new Date(version) >= new Date(lastUpdateAt)) {
+      return;
+    }
+  }
+  catch (error) { console.log(error); return; }
+  
+  lines = filterComments(lines);
+  
+  if (!processFunction) {
+    return lines;
+  }
+    
+  return processFunction(lines);
+}
+
+/**
+  * Fetches, parses and persists the trusted hosts
+  */
+async function updateTrustedHosts() {
+  const parsed = await fetchAndParse('trusted', function (lines) {
+    const obj = {};
+    lines.forEach((line) => {
+      const [host, id] = line.split(';');
+      obj[host] = id;
+    });
+    return obj;
+  });
+  
+  if (!parsed) { return; }
+    
+  await messenger.storage.local.set({
+    'trusted': parsed,
+    'trustedVersion': Date.now()
+  });
+}
+
+/**
+  * Fetches, parses and persists the redirect hosts
+  */
+async function updateRedirectHosts() {
+  const parsed = await fetchAndParse('redirect');
+  
+  if (!parsed) { return; }
+    
+  await messenger.storage.local.set({
+    'redirect': parsed,
+    'redirectVersion': Date.now()
+  });
+}
+
+/**
+  * Fetches, parses and persists the organization list
+  */
+async function updateOrganizationList() {
+  const parsed = await fetchAndParse('orgs', function (lines) {
+    console.log(lines);
+    const obj = {};
+    lines.forEach((line) => {
+      const [id, name, sector, country] = line.split(';');
+      obj[id] = {
+        name,
+        sector,
+        country
+      };
+    });
+    return obj;
+  });
+  
+  if (!parsed) { return; }
+  
+  console.log(parsed);
+    
+  await messenger.storage.local.set({
+    'orgs': JSON.stringify(parsed),
+    'orgsVersion': Date.now()
+  });
+}
+
+async function updateSuspiciousHosts() {
+  const lists = await Promise.all(SOURCE.suspicious.map(async function ({ url, get }){
+    let lines;
+    try {
+      const response = await window.fetch(url);
+      lines = (await response.text()).split('\n');
+    }
+    catch (error) { console.log(error); return; }
+    
+    lines = filterComments(lines);
+    
+    if (!get) {
+      return lines;
+    }
+    return lines.map((line) => get(line));
+  }));
+  
+  const fullList = [].concat(...lists);
+  
+  await messenger.storage.local.set({
+    'suspicious': fullList
+  });
 }
 
 async function registerContentScripts() {
@@ -42,7 +154,6 @@ async function registerContentScripts() {
       { file: 'style/iconmonstr-font.css' }
     ]
   });
-  console.log('content scripts registered');
 }
 
 async function registerRuntimeMessageHandler() {
@@ -56,41 +167,77 @@ async function registerRuntimeMessageHandler() {
       }
     }
   });
-  console.log('listen to runtime messages');
 }
 
 async function findDomain(urlString) {
-  let url = new URL(urlString);
-  
-  let domain = PublicSuffixList.getDomain(url.hostname);
+  const host = (new URL(urlString)).hostname;
+  const domain = PublicSuffixList.getDomain(host);
   
   const splitByDot = domain.split('.');
   const sld = splitByDot.shift();
   const tld = splitByDot.join('.');
-  
-  const domainInfo = (await messenger.storage.local.get(domain))[domain] || {};
-  console.log(domainInfo);
-  
-  let orgInfo;
-  if (domainInfo.type === 'trusted' && domainInfo.org) {
-    orgInfo = (await messenger.storage.local.get('orgs'))['orgs'][domainInfo.org];
-  }
-  
-  return {
+  const domainInfo = {
     domain,
     secondLevelDomain: sld,
     topLevelDomain: tld,
-    ...domainInfo,
-    ...orgInfo
+  }
+  
+  // look up domain in trusted hosts
+  const { trusted } = await messenger.storage.local.get('trusted');
+  
+  if (trusted[domain]) {
+    console.log('trusted');
+    const orgDetails = (await messenger.storage.local.get('orgs'))[trusted[domain].org] || {};
+    return {
+      type: 'trusted',
+      ...domainInfo,
+      ...orgDetails
+    }
+  }
+  
+  // look up domain in redirect hosts
+  const { redirect } = await messenger.storage.local.get('redirect');
+  
+  if (redirect.indexOf(domain) > -1) {
+    console.log('redirect');
+    return {
+      type: 'redirect',
+      ...domainInfo
+    }
+  }
+  
+  // look up domain and host in suspicious hosts
+  const { suspicious } = await messenger.storage.local.get('suspicious');
+  
+  if (suspicious.indexOf(domain) > -1 || suspicious.indexOf(host) > -1) {
+    console.log('suspicious');
+    return {
+      type: 'suspicious',
+      ...domainInfo
+    }
+  }
+  
+  console.log('unknown');
+  return {
+    ...domainInfo
   }
 }
 
-async function run() { 
-  await updateKnowledge();
+async function run() {
+  // if psl is older than 1 day update it
+  const { pslVersion } = await messenger.storage.local.get('pslVersion');
+  if (!pslVersion || new Date() > new Date(pslVersion + 86400000)) {
+    await updatePSL();
+  }
+  const psl = await messenger.storage.local.get('psl');
+  PublicSuffixList.parse(psl, punycode.toASCII);
   
-  await updatePublicSuffixList();
-  const list = await messenger.storage.local.get('publicSuffixList');
-  PublicSuffixList.parse(list, punycode.toASCII);
+  await updateOrganizationList();
+  await updateTrustedHosts();
+  await updateRedirectHosts();
+  await updateSuspiciousHosts();
+  
+  console.log('saved:', await messenger.storage.local.get('suspicious'));
   
   await registerContentScripts();
   await registerRuntimeMessageHandler();

@@ -2,6 +2,7 @@
 
 .safelink, .safelink * {
   box-sizing: border-box;
+  text-align: left;
 }
 
 .safelink .block {
@@ -201,15 +202,15 @@
   color: #2e8b57;
 }
 
-.safelink .color-untrusted {
+.safelink .color-suspicious {
   color: #ef3038;
 }
 
-.safelink .bg-untrusted {
+.safelink .bg-suspicious {
   background: #ef3038;
 }
 
-.safelink a.bg-untrusted:hover {
+.safelink a.bg-suspicious:hover {
   background: #ce2029;
 }
 

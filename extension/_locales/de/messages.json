@@ -5,8 +5,8 @@
   "type_trusted": {
     "message": "Vertrauenswürdig"
   },
-  "type_untrusted": {
-    "message": "Nicht vertrauenswürdig"
+  "type_suspicious": {
+    "message": "Verdächtig"
   },
   "type_unknown": {
     "message": "Unbekannt"

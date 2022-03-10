@@ -21,8 +21,8 @@ async function openLinkInfo(url) {
       type = 'trusted';
       iconClass = 'im-check-mark-circle';
       break;
-    case 'untrusted':
-      type = 'untrusted';
+    case 'suspicious':
+      type = 'suspicious';
       iconClass = 'im-warning-circle';
       break;
     case 'redirect':
@@ -34,7 +34,7 @@ async function openLinkInfo(url) {
       iconClass = 'im-question';
   }
   
-  if (domainDetails.type === 'redirect') {
+  if (type === 'redirect') {
     if (!url.endsWith('+')) {
       url += '+'
     }
@@ -100,7 +100,7 @@ async function openLinkInfo(url) {
       <a class="block bg-${ type } color-white p-2 centered border-radius unstyled" href="${ url }">
         ${ i18n.getMessage('openURL') }
         ${
-          type === 'untrusted' ?
+          type === 'suspicious' ?
             '<i class="small-text space-left im im-warning"></i>':
             '<i class="small-text space-left im im-external-link"></i>'
         }
