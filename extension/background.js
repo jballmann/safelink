@@ -1,3 +1,8 @@
+function getHostName(url) {
+  url = url.replace(/http(s)?:\/\/(www[0-9]?.)?/, '');
+  return (new URL('http://' + url)).hostname;
+}
+
 const SOURCE = {
   publicSuffixList: 'https://publicsuffix.org/list/public_suffix_list.dat',
   trusted: 'https://raw.githubusercontent.com/jballmann/safelink/master/lists/hosts_trusted.txt',
@@ -7,15 +12,25 @@ const SOURCE = {
     {
       url: 'https://curben.gitlab.io/malware-filter/phishing-filter-hosts.txt',
       get: (line) => line.split(' ')[1]
+    },
+    {
+      url: 'https://phishstats.info/phish_score.csv',
+      get: (line) => line.split(',')[2].replace(/"/g, '')
     }
   ]
 }
 
 function filterComments(array) {
   return array.filter(function (line){
-    return line !== "" &&
+    return line !=='' &&
     !line.startsWith('!') &&
     !line.startsWith('#')
+  });
+}
+
+function filterEmptyStrings(array) {
+  return array.filter(function (line){
+    return line !== '';
   });
 }
 
@@ -134,10 +149,16 @@ async function updateSuspiciousHosts() {
     if (!get) {
       return lines;
     }
-    return lines.map((line) => get(line));
+    return lines.map(function (line) {
+      const record = get(line);
+      return getHostName(record);
+    });
   }));
   
-  const fullList = [].concat(...lists);
+  let fullList = [].concat(...lists);
+  
+  // remove duplicates
+  fullList = [...new Set(fullList)];
   
   await messenger.storage.local.set({
     'suspicious': fullList
@@ -170,7 +191,7 @@ async function registerRuntimeMessageHandler() {
 }
 
 async function findDomain(urlString) {
-  const host = (new URL(urlString)).hostname;
+  const host = getHostName(urlString);
   const domain = PublicSuffixList.getDomain(host);
   
   const splitByDot = domain.split('.');

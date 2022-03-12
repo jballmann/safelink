@@ -41,6 +41,7 @@ async function openLinkInfo(url) {
   }
   
   const i18n = messenger.i18n;
+  const lang = i18n.getMessage('@@ui_locale');
   
   container.innerHTML = `
     <div class="table table-fixed">
@@ -85,7 +86,10 @@ async function openLinkInfo(url) {
             <div class="table-row">
               <div class="table-column py-1 pr-3 width-80px"></div>
               <div class="table-column py-1">
-                <a class="color-primary" href="#check-domain">
+                <a
+                  class="color-primary"
+                  href="https://github.com/jballmann/safelink/blob/master/docs/${lang}/checkdomain.md"
+                >
                   ${ i18n.getMessage('checkDomain') } <i class="small-text im im-angle-right"></i>
                 </a>
               </div>
