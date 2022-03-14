@@ -68,12 +68,12 @@ async function openLinkInfo(url) {
         </div>
       </div>
       ${(() => {
-        if (domainDetails.org) {
+        if (domainDetails.name) {
           return `
             <div class="table-row">
-              <div class="table-column py-1 pr-3 width-80px">Von</div>
+              <div class="table-column py-1 pr-3 width-80px">${ i18n.getMessage('by') }</div>
               <div class="table-column py-1">
-                <div>${ domainDetails.org }</div>
+                <div>${ domainDetails.name }</div>
                 <div class="small-text color-grey">
                   ${ i18n.getMessage('sector_' + domainDetails.sector) }, ${ domainDetails.country }
                 </div>
@@ -88,7 +88,7 @@ async function openLinkInfo(url) {
               <div class="table-column py-1">
                 <a
                   class="color-primary"
-                  href="https://github.com/jballmann/safelink/blob/master/docs/${lang}/checkdomain.md"
+                  href="https://github.com/jballmann/safelink/blob/master/docs/${lang}/domaincheck.md"
                 >
                   ${ i18n.getMessage('checkDomain') } <i class="small-text im im-angle-right"></i>
                 </a>
@@ -101,7 +101,10 @@ async function openLinkInfo(url) {
     </div>
     
     <div class="mt-3 pb-1">
-      <a class="block bg-${ type } color-white p-2 centered border-radius unstyled" href="${ url }">
+      <a
+        class="block bg-${ type } color-white p-2 centered border-radius unstyled"
+        href="${ url }"
+      >
         ${ i18n.getMessage('openURL') }
         ${
           type === 'suspicious' ?
@@ -111,16 +114,14 @@ async function openLinkInfo(url) {
       </a>
     </div>
   `;
-  
-  const containerClickHandler = (event) => {
-    event.stopPropagation();
-  }
+
   const wrapperClickHandler = (event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
     wrapper.removeEventListener('click', wrapperClickHandler);
-    container.removeEventListener('click', containerClickHandler);
     document.body.removeChild(background);
   }
-  container.addEventListener('click', containerClickHandler);
   wrapper.addEventListener('click', wrapperClickHandler);
   
   wrapper.appendChild(container);
@@ -137,7 +138,7 @@ function handleLinkClicks() {
       event.preventDefault();
       event.stopPropagation();
       openLinkInfo(link.href);
-    })
+    });
   });
 }
 handleLinkClicks();

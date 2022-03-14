@@ -22,5 +22,8 @@
   },
   "checkDomain": {
     "message": "Domain prüfen"
+  },
+  "by": {
+    "message": "Von"
   }
 }

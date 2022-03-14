@@ -59,5 +59,5 @@ Holen Sie in diesem Fall weitere Informationen ein, indem Sie beispielweise bei 
 Darüber hinaus wird bei einigen Checks Sperrlisten verwendet.
 Diese umfassen nicht alle bösartigen Websiten, die zurzeit online verfügbar sind.
 So sollte auch, wenn nichts Auffälliges gefunden wurde, Vorsicht bewahrt werden bei jeder Webadresse
-die sie nicht kennen und der sie zu 100% vertrauen.
+die sie nicht kennen und der sie nicht zu 100% vertrauen.
 

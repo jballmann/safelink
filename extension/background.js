@@ -208,12 +208,16 @@ async function findDomain(urlString) {
   
   if (trusted[domain]) {
     console.log('trusted');
-    const orgDetails = (await messenger.storage.local.get('orgs'))[trusted[domain].org] || {};
-    return {
+    
+    const orgs = JSON.parse((await messenger.storage.local.get('orgs')).orgs);
+    const orgDetails = orgs[trusted[domain]] || {};
+    const result = {
       type: 'trusted',
       ...domainInfo,
       ...orgDetails
-    }
+    };
+    console.log(result);
+    return result;
   }
   
   // look up domain in redirect hosts
