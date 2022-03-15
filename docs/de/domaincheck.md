@@ -19,7 +19,7 @@ Zur Überprüfung der Unbedenktlichkeit einer Domain bzw. URL können eine Vielz
 online assistieren.
 Bereitgestellt werden sie durch Initiativen von Online-Communities und Unternehmen,
 die Antiviren-Software vertreiben.
-Einie Auswahl dieser Tools ist hier aufgelistet:
+Eine Auswahl dieser Tools ist hier aufgelistet:
 
 * https://sitecheck.sucuri.net/
 * https://www.urlvoid.com/
